@@ -8,17 +8,17 @@ import { MOCK } from '@/lib/data';
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: 'Home', href: '/', count: null },
-  { id: 'courses', label: 'My Courses', icon: 'Courses', href: '/lesson', count: '4' },
-  { id: 'live', label: 'Live Classes', icon: 'Live', href: '#', count: '1', live: true },
+  { id: 'courses', label: 'My Courses', icon: 'Courses', href: '/courses', count: '4' },
+  { id: 'live', label: 'Live Classes', icon: 'Live', href: '/live', count: '1', live: true },
   { id: 'exams', label: 'Exams & MCQ', icon: 'Exam', href: '/exams', count: '3' },
-  { id: 'materials', label: 'Study Materials', icon: 'Materials', href: '#', count: null },
+  { id: 'materials', label: 'Study Materials', icon: 'Materials', href: '/materials', count: null },
   { id: 'performance', label: 'Performance', icon: 'Analytics', href: '/v2', count: null },
   { id: 'v3', label: 'Command Center', icon: 'Target', href: '/v3', count: null },
 ];
 
 const SUPPORT = [
-  { id: 'mentor', label: 'Mentor', icon: 'Mentor', href: '#' },
-  { id: 'calendar', label: 'Calendar', icon: 'Calendar', href: '#' },
+  { id: 'mentor', label: 'Mentor', icon: 'Mentor', href: '/mentor' },
+  { id: 'calendar', label: 'Calendar', icon: 'Calendar', href: '/calendar' },
 ];
 
 export function Sidebar() {
@@ -59,7 +59,7 @@ export function Sidebar() {
         );
       })}
 
-      <div className="footer-card">
+      <Link href="/settings" className="footer-card" style={{ textDecoration: 'none', color: 'inherit' }}>
         <div className="avatar">{MOCK.student.initials}</div>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -70,12 +70,12 @@ export function Sidebar() {
           </div>
         </div>
         <Icons.Settings size={14} style={{ color: 'var(--ink-3)' }} />
-      </div>
+      </Link>
     </aside>
   );
 }
 
-export function Topbar({ crumbs }: { crumbs?: { label: string; active?: boolean }[] }) {
+export function Topbar({ crumbs }: { crumbs?: { label: string; active?: boolean; href?: string }[] }) {
   return (
     <div className="topbar">
       {crumbs ? (
@@ -83,7 +83,11 @@ export function Topbar({ crumbs }: { crumbs?: { label: string; active?: boolean 
           {crumbs.map((c, i) => (
             <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {i > 0 && <Icons.ChevronRight size={12} />}
-              <span style={{ color: c.active ? 'var(--ink)' : 'var(--ink-3)' }}>{c.label}</span>
+              {c.href ? (
+                <Link href={c.href} style={{ color: 'var(--ink-3)', textDecoration: 'none' }}>{c.label}</Link>
+              ) : (
+                <span style={{ color: c.active ? 'var(--ink)' : 'var(--ink-3)' }}>{c.label}</span>
+              )}
             </span>
           ))}
         </div>

@@ -135,7 +135,7 @@ export function V3Command() {
                   <div style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 14 }}>
                     {liveNow.instructor} · started {liveNow.startedMinAgo}m ago
                   </div>
-                  <button className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'center' }}>Join class</button>
+                  <button className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'center' }} onClick={() => router.push('/live')}>Join class</button>
                 </div>
 
                 <div className="card" style={{ padding: 20, borderColor: 'var(--amber)', background: 'linear-gradient(180deg, var(--amber-soft) 0%, transparent 140%)' }}>
@@ -145,8 +145,8 @@ export function V3Command() {
                   <div style={{ fontSize: 14.5, fontWeight: 500, lineHeight: 1.3, marginBottom: 4 }}>Model Test 07</div>
                   <div style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 14 }}>100 MCQ · 60 min · Phys / Chem / Bio</div>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-primary btn-sm" style={{ flex: 1, justifyContent: 'center', background: 'oklch(0.60 0.14 65)', color: 'oklch(0.15 0.04 65)' }}>Prepare</button>
-                    <button className="btn btn-secondary btn-sm">Syllabus</button>
+                    <button className="btn btn-primary btn-sm" style={{ flex: 1, justifyContent: 'center', background: 'oklch(0.60 0.14 65)', color: 'oklch(0.15 0.04 65)' }} onClick={() => router.push('/exams')}>Prepare</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => router.push('/exams')}>Syllabus</button>
                   </div>
                 </div>
               </div>
@@ -155,7 +155,7 @@ export function V3Command() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>Your courses</div>
-                  <button className="btn btn-ghost btn-sm" style={{ fontSize: 11.5 }}>All 4 <Icons.ArrowRight size={11} /></button>
+                  <button className="btn btn-ghost btn-sm" style={{ fontSize: 11.5 }} onClick={() => router.push('/courses')}>All 4 <Icons.ArrowRight size={11} /></button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                   {MOCK.courses.map(c => (

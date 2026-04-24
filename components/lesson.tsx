@@ -44,7 +44,7 @@ export function LessonPage() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Topbar crumbs={[
-          { label: 'Courses' },
+          { label: 'Courses', href: '/courses' },
           { label: 'Organic Chemistry' },
           { label: 'Ch 12 · Aldehydes & Ketones' },
           { label: 'Lec 05', active: true },

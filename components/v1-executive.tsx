@@ -131,7 +131,7 @@ export function V1Executive() {
               <div className="vr" style={{ height: 16 }} />
               <div>{secondaryAction.subjects.join(' · ')}</div>
             </div>
-            <button className="btn btn-secondary btn-sm">Prepare</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => router.push('/exams')}>Prepare</button>
           </section>
 
           {/* Whisper stats row */}
@@ -168,7 +168,7 @@ export function V1Executive() {
           <section style={{ marginTop: 56 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 22 }}>
               <h3 className="display" style={{ fontSize: 18, fontWeight: 500, margin: 0, letterSpacing: '-0.015em' }}>In progress</h3>
-              <button className="btn btn-ghost btn-sm" style={{ fontSize: 12 }}>View all courses <Icons.ArrowRight size={12} /></button>
+              <button className="btn btn-ghost btn-sm" style={{ fontSize: 12 }} onClick={() => router.push('/courses')}>View all courses <Icons.ArrowRight size={12} /></button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
