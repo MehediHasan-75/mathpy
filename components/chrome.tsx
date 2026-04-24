@@ -10,9 +10,9 @@ const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: 'Home', href: '/', count: null },
   { id: 'courses', label: 'My Courses', icon: 'Courses', href: '/lesson', count: '4' },
   { id: 'live', label: 'Live Classes', icon: 'Live', href: '#', count: '1', live: true },
-  { id: 'exams', label: 'Exams & MCQ', icon: 'Exam', href: '#', count: '3' },
+  { id: 'exams', label: 'Exams & MCQ', icon: 'Exam', href: '/exams', count: '3' },
   { id: 'materials', label: 'Study Materials', icon: 'Materials', href: '#', count: null },
-  { id: 'performance', label: 'Performance', icon: 'Analytics', href: '#', count: null },
+  { id: 'performance', label: 'Performance', icon: 'Analytics', href: '/v2', count: null },
   { id: 'v3', label: 'Command Center', icon: 'Target', href: '/v3', count: null },
 ];
 

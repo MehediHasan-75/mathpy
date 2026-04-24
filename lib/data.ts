@@ -138,4 +138,21 @@ export const MOCK = {
     { id: 'm2', title: 'Rotational Dynamics — Formula Book', course: 'Physics', kind: 'PDF', pages: 14, size: '3.8 MB', downloadedAt: 'Yesterday' },
     { id: 'm3', title: 'Cell Cycle — Visual Notes', course: 'Biology', kind: 'Notes', pages: 22, size: '5.1 MB' },
   ],
+
+  subjectPerformance: [
+    { subject: 'Biology',   pct: 88, trend: +4 },
+    { subject: 'Chemistry', pct: 82, trend: +6 },
+    { subject: 'Physics',   pct: 71, trend: -2 },
+    { subject: 'Math',      pct: 79, trend: +3 },
+  ],
+
+  weeklyActivity: [1.2, 2.8, 3.1, 0.4, 2.6, 1.9, 0.2],
+
+  recentResults: [
+    { id: 'r1', title: 'Organic Ch. 11',       scorePct: 82, delta: +6, date: 'Apr 20' },
+    { id: 'r2', title: 'Physics — Kinematics', scorePct: 74, delta: -3, date: 'Apr 18' },
+    { id: 'r3', title: 'Biology — Cell Cycle', scorePct: 91, delta: +8, date: 'Apr 16' },
+    { id: 'r4', title: 'Model Test 06',        scorePct: 78, delta: +2, date: 'Apr 13' },
+    { id: 'r5', title: 'Math — Vectors',       scorePct: 85, delta: +4, date: 'Apr 10' },
+  ],
 };
