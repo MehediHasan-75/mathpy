@@ -13,6 +13,7 @@ const NAV = [
   { id: 'exams', label: 'Exams & MCQ', icon: 'Exam', href: '#', count: '3' },
   { id: 'materials', label: 'Study Materials', icon: 'Materials', href: '#', count: null },
   { id: 'performance', label: 'Performance', icon: 'Analytics', href: '#', count: null },
+  { id: 'v3', label: 'Command Center', icon: 'Target', href: '/v3', count: null },
 ];
 
 const SUPPORT = [

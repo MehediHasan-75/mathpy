@@ -117,4 +117,25 @@ export const MOCK = {
     { id: 'n2', text: 'Mentor Farhan left feedback on Chem Ch.11', time: '2h', kind: 'mentor' },
     { id: 'n3', text: 'New sheet uploaded — Rotational Dynamics', time: '5h', kind: 'material' },
   ],
+
+  mentor: {
+    name: 'Farhan Kabir',
+    title: 'Senior Mentor · DMC \'22',
+    initials: 'FK',
+    lastMessage: 'Arafat, excellent jump on Ch.11 — let\'s review Ch.12 before tomorrow\'s model test. I\'ve left 3 questions for you.',
+    timeAgo: '2 hours ago',
+  },
+
+  liveNow: {
+    title: 'Organic Chemistry — Doubt Clearing',
+    instructor: 'Dr. Sharmin Akter',
+    viewers: 342,
+    startedMinAgo: 18,
+  },
+
+  materials: [
+    { id: 'm1', title: 'Aldehydes & Ketones — Reaction Sheet', course: 'Organic Chemistry', kind: 'Sheet', pages: 8, size: '2.4 MB', downloadedAt: 'Today' },
+    { id: 'm2', title: 'Rotational Dynamics — Formula Book', course: 'Physics', kind: 'PDF', pages: 14, size: '3.8 MB', downloadedAt: 'Yesterday' },
+    { id: 'm3', title: 'Cell Cycle — Visual Notes', course: 'Biology', kind: 'Notes', pages: 22, size: '5.1 MB' },
+  ],
 };
