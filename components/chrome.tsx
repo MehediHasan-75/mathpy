@@ -5,15 +5,16 @@ import { usePathname } from 'next/navigation';
 import { Icons } from './icons';
 import { Wordmark, Spotmark } from './brand';
 import { MOCK } from '@/lib/data';
+import { useTheme } from './theme-provider';
 
 const NAV = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'Home', href: '/', count: null },
+  { id: 'dashboard', label: 'Command Center', icon: 'Target', href: '/', count: null },
   { id: 'courses', label: 'My Courses', icon: 'Courses', href: '/courses', count: '4' },
   { id: 'live', label: 'Live Classes', icon: 'Live', href: '/live', count: '1', live: true },
   { id: 'exams', label: 'Exams & MCQ', icon: 'Exam', href: '/exams', count: '3' },
   { id: 'materials', label: 'Study Materials', icon: 'Materials', href: '/materials', count: null },
   { id: 'performance', label: 'Performance', icon: 'Analytics', href: '/v2', count: null },
-  { id: 'v3', label: 'Command Center', icon: 'Target', href: '/v3', count: null },
+  { id: 'v1', label: 'Classic Dashboard', icon: 'Home', href: '/v1', count: null },
 ];
 
 const SUPPORT = [
@@ -76,6 +77,7 @@ export function Sidebar() {
 }
 
 export function Topbar({ crumbs }: { crumbs?: { label: string; active?: boolean; href?: string }[] }) {
+  const { theme, toggle } = useTheme();
   return (
     <div className="topbar">
       {crumbs ? (
@@ -106,6 +108,14 @@ export function Topbar({ crumbs }: { crumbs?: { label: string; active?: boolean;
           <span>day streak</span>
         </div>
         <div className="vr" style={{ height: 18 }} />
+        <button
+          className="icon-btn"
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          onClick={toggle}
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        >
+          {theme === 'dark' ? <Icons.Sun size={16} /> : <Icons.Moon size={16} />}
+        </button>
         <button className="icon-btn" aria-label="Notifications">
           <Icons.Bell size={16} />
           <span className="dot" />

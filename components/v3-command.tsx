@@ -25,7 +25,7 @@ export function V3Command() {
   ];
 
   return (
-    <div className="artboard-shell dark">
+    <div className="artboard-shell">
       <Sidebar />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>

@@ -92,7 +92,42 @@ a { color: inherit; text-decoration: none; }
   overflow-y: auto;
 }
 
-/* Dark shell for variation 3 */
+/* Global dark theme */
+html[data-theme="dark"] {
+  --bg: oklch(0.16 0.012 260);
+  --bg-elev: oklch(0.20 0.012 260);
+  --bg-sunk: oklch(0.13 0.012 260);
+  --ink: oklch(0.97 0.005 80);
+  --ink-2: oklch(0.80 0.008 260);
+  --ink-3: oklch(0.62 0.010 260);
+  --ink-4: oklch(0.42 0.010 260);
+  --rule: oklch(0.26 0.012 260);
+  --rule-strong: oklch(0.32 0.012 260);
+  --blue: oklch(0.72 0.14 258);
+  --blue-soft: oklch(0.28 0.06 258);
+  --emerald: oklch(0.72 0.14 165);
+  --emerald-soft: oklch(0.28 0.06 165);
+  --amber: oklch(0.82 0.14 75);
+  --amber-soft: oklch(0.30 0.06 75);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.20);
+  --shadow-md: 0 1px 2px oklch(0 0 0 / 0.25), 0 6px 20px -8px oklch(0 0 0 / 0.35);
+  --shadow-lg: 0 2px 4px oklch(0 0 0 / 0.20), 0 16px 40px -12px oklch(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Smooth theme transition */
+html {
+  transition: background-color 200ms ease;
+}
+body {
+  transition: background-color 200ms ease, color 150ms ease;
+}
+
+/* Legacy: dark shell class (kept for any residual usage) */
 .artboard-shell.dark {
   --bg: oklch(0.16 0.012 260);
   --bg-elev: oklch(0.20 0.012 260);

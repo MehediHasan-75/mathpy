@@ -1,5 +1,5 @@
-import { V1Executive } from '@/components/v1-executive';
+import { V3Command } from '@/components/v3-command';
 
 export default function DashboardPage() {
-  return <V1Executive />;
+  return <V3Command />;
 }
