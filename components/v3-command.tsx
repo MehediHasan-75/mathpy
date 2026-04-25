@@ -1,21 +1,87 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icons } from './icons';
 import { Sidebar, Topbar } from './chrome';
 import { MOCK } from '@/lib/data';
 
+type TaskKind = 'video' | 'pdf' | 'practice' | 'exam' | 'other';
+
+type Task = {
+  id: string;
+  title: string;
+  meta: string;
+  kind: TaskKind;
+  done: boolean;
+  active?: boolean;
+};
+
+const DEFAULT_TASKS: Task[] = [
+  { id: 't1', done: true,  kind: 'video',    title: 'Morning: Physics lecture — Kinematics recap',   meta: '42 min · Md. Rafiq Hasan' },
+  { id: 't2', done: true,  kind: 'pdf',      title: 'Read: Biology notes — Cell cycle diagrams',       meta: '22 pages · Dr. Anika Rahman' },
+  { id: 't3', done: true,  kind: 'practice', title: 'Practice: Chemistry 30 MCQ',                     meta: '20 min · Auto-graded · 82% scored' },
+  { id: 't4', done: false, kind: 'video',    title: 'Aldehydes & Ketones — Nucleophilic Addition',     meta: '48 min · Dr. Sharmin Akter · 42% watched', active: true },
+  { id: 't5', done: false, kind: 'practice', title: 'Physics MCQ — Rotational Dynamics',               meta: '20 min · 30 questions' },
+];
+
+const KIND_OPTS: { value: TaskKind; label: string }[] = [
+  { value: 'video',    label: 'Video' },
+  { value: 'pdf',      label: 'PDF / Notes' },
+  { value: 'practice', label: 'Practice' },
+  { value: 'exam',     label: 'Exam' },
+  { value: 'other',    label: 'Other' },
+];
+
+const storageKey = () => `mathpy-plan-${new Date().toISOString().slice(0, 10)}`;
+
 export function V3Command() {
   const router = useRouter();
   const { student, mentor, liveNow, materials } = MOCK;
 
-  const tasks = [
-    { done: true,  kind: 'video',    title: 'Morning: Physics lecture — Kinematics recap',       meta: '42 min · Md. Rafiq Hasan' },
-    { done: true,  kind: 'pdf',      title: 'Read: Biology notes — Cell cycle diagrams',          meta: '22 pages · Dr. Anika Rahman' },
-    { done: true,  kind: 'practice', title: 'Practice: Chemistry 30 MCQ',                        meta: '20 min · Auto-graded · 82% scored' },
-    { done: false, active: true,     title: 'Aldehydes & Ketones — Nucleophilic Addition',        meta: '48 min · Dr. Sharmin Akter · 42% watched' },
-    { done: false, kind: 'practice', title: 'Physics MCQ — Rotational Dynamics',                  meta: '20 min · 30 questions' },
-  ];
+  const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
+  const [adding, setAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newMeta, setNewMeta]   = useState('');
+  const [newKind, setNewKind]   = useState<TaskKind>('video');
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey());
+      if (saved) setTasks(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  // Persist on change
+  useEffect(() => {
+    try { localStorage.setItem(storageKey(), JSON.stringify(tasks)); } catch {}
+  }, [tasks]);
+
+  const toggle = (id: string) =>
+    setTasks(ts => ts.map(t => t.id === id ? { ...t, done: !t.done, active: t.done ? t.active : false } : t));
+
+  const remove = (id: string) =>
+    setTasks(ts => ts.filter(t => t.id !== id));
+
+  const addTask = () => {
+    if (!newTitle.trim()) return;
+    const t: Task = {
+      id: `t${Date.now()}`,
+      title: newTitle.trim(),
+      meta: newMeta.trim(),
+      kind: newKind,
+      done: false,
+    };
+    setTasks(ts => [...ts, t]);
+    setNewTitle('');
+    setNewMeta('');
+    setNewKind('video');
+    setAdding(false);
+  };
+
+  const doneCount = tasks.filter(t => t.done).length;
+  const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
 
   const leaderboard = [
     { rank: 140, name: 'Samira K.',  score: 79.1 },
@@ -61,57 +127,143 @@ export function V3Command() {
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 500 }}>Mission brief</div>
                   </div>
-                  <div className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>3 OF 5 DONE</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>
+                      {doneCount} OF {tasks.length} DONE
+                    </div>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      style={{ fontSize: 11.5 }}
+                      onClick={() => setAdding(a => !a)}
+                    >
+                      {adding ? 'Cancel' : '+ Add task'}
+                    </button>
+                  </div>
                 </div>
 
                 {tasks.map((task, i) => (
-                  <div key={i} style={{
-                    display: 'grid',
-                    gridTemplateColumns: '20px 1fr auto',
-                    gap: 14,
-                    padding: '14px 24px',
-                    borderBottom: i === tasks.length - 1 ? 'none' : '1px solid var(--rule)',
-                    alignItems: 'center',
-                    background: task.active ? 'var(--blue-soft)' : 'transparent',
-                    cursor: 'pointer',
-                  }}>
-                    <div style={{
-                      width: 16, height: 16, borderRadius: 5,
-                      border: `1.5px solid ${task.done ? 'var(--emerald)' : task.active ? 'var(--blue)' : 'var(--rule-strong)'}`,
-                      background: task.done ? 'var(--emerald)' : 'transparent',
-                      display: 'grid', placeItems: 'center', flexShrink: 0,
-                    }}>
+                  <div
+                    key={task.id}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '20px 1fr auto',
+                      gap: 14,
+                      padding: '14px 24px',
+                      borderBottom: '1px solid var(--rule)',
+                      alignItems: 'center',
+                      background: task.active && !task.done ? 'var(--blue-soft)' : 'transparent',
+                    }}
+                  >
+                    {/* Checkbox */}
+                    <button
+                      onClick={() => toggle(task.id)}
+                      style={{
+                        width: 16, height: 16, borderRadius: 5,
+                        border: `1.5px solid ${task.done ? 'var(--emerald)' : task.active ? 'var(--blue)' : 'var(--rule-strong)'}`,
+                        background: task.done ? 'var(--emerald)' : 'transparent',
+                        display: 'grid', placeItems: 'center', flexShrink: 0,
+                        cursor: 'pointer', padding: 0,
+                      }}
+                    >
                       {task.done && <Icons.Check size={10} style={{ color: 'var(--bg)', strokeWidth: 3 } as React.CSSProperties} />}
-                    </div>
+                    </button>
+
+                    {/* Text */}
                     <div style={{ minWidth: 0 }}>
                       <div style={{
                         fontSize: 13.5,
-                        fontWeight: task.active ? 500 : 400,
+                        fontWeight: task.active && !task.done ? 500 : 400,
                         color: task.done ? 'var(--ink-3)' : 'var(--ink)',
                         textDecoration: task.done ? 'line-through' : 'none',
                         marginBottom: 2,
                       }}>
                         {task.title}
                       </div>
-                      <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{task.meta}</div>
+                      {task.meta && <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{task.meta}</div>}
                     </div>
-                    {task.active && (
-                      <button className="btn btn-primary btn-sm" style={{ fontSize: 11.5 }} onClick={() => router.push('/lesson')}>
-                        <Icons.Play size={11} /> Resume
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      {task.active && !task.done && (
+                        <button className="btn btn-primary btn-sm" style={{ fontSize: 11.5 }} onClick={() => router.push('/lesson')}>
+                          <Icons.Play size={11} /> Resume
+                        </button>
+                      )}
+                      {!task.active && !task.done && (
+                        <button className="btn btn-secondary btn-sm" style={{ fontSize: 11.5 }}>Start</button>
+                      )}
+                      <button
+                        onClick={() => remove(task.id)}
+                        style={{
+                          width: 22, height: 22, borderRadius: 5, border: 'none',
+                          background: 'transparent', cursor: 'pointer', padding: 0,
+                          display: 'grid', placeItems: 'center', color: 'var(--ink-4)',
+                          opacity: 0.5,
+                        }}
+                        title="Remove task"
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
                       </button>
-                    )}
-                    {!task.active && !task.done && (
-                      <button className="btn btn-secondary btn-sm" style={{ fontSize: 11.5 }}>Start</button>
-                    )}
+                    </div>
                   </div>
                 ))}
 
-                <div style={{ padding: '14px 24px', borderTop: '1px solid var(--rule)', display: 'flex', alignItems: 'center', gap: 14 }}>
+                {/* Add task form */}
+                {adding && (
+                  <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--rule)', background: 'var(--bg-sunk)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <input
+                        autoFocus
+                        value={newTitle}
+                        onChange={e => setNewTitle(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') setAdding(false); }}
+                        placeholder="Task title…"
+                        style={{
+                          background: 'var(--bg)', border: '1px solid var(--rule)', borderRadius: 7,
+                          padding: '8px 12px', fontSize: 13, fontFamily: 'inherit', color: 'var(--ink)',
+                          outline: 'none', width: '100%',
+                        }}
+                      />
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <input
+                          value={newMeta}
+                          onChange={e => setNewMeta(e.target.value)}
+                          placeholder="Details (duration, instructor…)"
+                          style={{
+                            flex: 1, background: 'var(--bg)', border: '1px solid var(--rule)', borderRadius: 7,
+                            padding: '7px 12px', fontSize: 12, fontFamily: 'inherit', color: 'var(--ink)',
+                            outline: 'none',
+                          }}
+                        />
+                        <select
+                          value={newKind}
+                          onChange={e => setNewKind(e.target.value as TaskKind)}
+                          style={{
+                            background: 'var(--bg)', border: '1px solid var(--rule)', borderRadius: 7,
+                            padding: '7px 10px', fontSize: 12, fontFamily: 'inherit', color: 'var(--ink)',
+                            outline: 'none', cursor: 'pointer',
+                          }}
+                        >
+                          {KIND_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn btn-primary btn-sm" onClick={addTask} style={{ fontSize: 12 }}>Add task</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setAdding(false)} style={{ fontSize: 12 }}>Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress footer */}
+                <div style={{ padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ flex: 1 }}>
-                    <div className="progress emerald thick"><span style={{ width: '60%' }} /></div>
+                    <div className="progress emerald thick"><span style={{ width: `${pct}%` }} /></div>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>
-                    <span className="mono" style={{ color: 'var(--ink)' }}>60%</span> of today&apos;s plan
+                    <span className="mono" style={{ color: 'var(--ink)' }}>{pct}%</span> of today&apos;s plan
                   </div>
                 </div>
               </div>
@@ -227,7 +379,7 @@ export function V3Command() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>{mentor.timeAgo}</span>
-                  <button className="btn btn-secondary btn-sm" style={{ fontSize: 11.5 }}>Reply</button>
+                  <button className="btn btn-secondary btn-sm" style={{ fontSize: 11.5 }} onClick={() => router.push('/mentor')}>Reply</button>
                 </div>
               </div>
 
