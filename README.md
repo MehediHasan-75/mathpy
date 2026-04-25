@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# mathpy
 
-## Getting Started
+Premium LMS student dashboard for Bangladeshi medical/engineering admission coaching. Built with Next.js 16 + React 19. All UI in oklch color tokens, no Tailwind.
 
-First, run the development server:
+## Pages
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Route | Description |
+|---|---|
+| `/` | Command Center — daily mission brief, rank, live class, courses |
+| `/v1` | Classic dashboard — editorial masthead, weekly stats |
+| `/courses` | My Courses — grid/list toggle, track filter, progress |
+| `/lesson` | Lesson player — video, notes, chapters, assignment submission |
+| `/live` | Live Classes — active stream banner, upcoming schedule, recordings |
+| `/exams` | Exams & MCQ hub — upcoming tests, readiness gauges, results |
+| `/exams/practice` | MCQ practice session — answer sheet, timer, submit |
+| `/v2` | Performance dashboard — rank sparkline, subject breakdown, heatmap |
+| `/materials` | Study Materials — search, subject filter, download state |
+| `/mentor` | Mentor chat — messages, practice questions, session stats |
+| `/calendar` | Calendar — monthly grid with events, day detail panel |
+| `/settings` | Settings — profile, notifications, study goals, appearance |
+
+## API Routes
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/assignments/submit` | `POST` | Upload PDF assignment (multipart/form-data) |
+| `/api/assignments/remind` | `GET` | Check overdue submissions, trigger reminder emails |
+
+The remind endpoint runs automatically every 6 hours via Vercel Cron (`vercel.json`). Protect it with `CRON_SECRET` env var.
+
+## Assignment + Email Reminder Flow
+
+1. Each lesson has an assignment with a due date
+2. Student uploads PDF via the **Assignment** tab in `/lesson`
+3. `POST /api/assignments/submit` validates (PDF only, max 20 MB) and stores submission
+4. Cron hits `GET /api/assignments/remind` every 6h — finds students past due with no submission
+5. Sends reminder email per student
+
+**Email sending is a stub** — plug in your provider in `app/api/assignments/remind/route.ts`:
+
+```ts
+// Resend
+await fetch('https://api.resend.com/emails', {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({ from: 'noreply@mathpy.bd', to, subject, html }),
+});
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16.2** — App Router, static pre-rendering, server route handlers
+- **React 19** — `useState`, `useEffect`, `useRef`, `useContext`
+- **TypeScript** — strict, no `any`
+- **Fonts** — Inter, Inter Tight, JetBrains Mono via `next/font/google`
+- **Colors** — oklch tokens throughout, no hex/rgb
+- **Theme** — dark/light toggle, `localStorage` persistence, FOUC-free via inline script
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+```env
+# Cron endpoint protection
+CRON_SECRET=your-secret-here
 
-To learn more about Next.js, take a look at the following resources:
+# Email (fill in for your provider)
+NEXT_PUBLIC_APP_URL=https://your-domain.com
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Example: Resend
+RESEND_API_KEY=re_...
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Example: SMTP
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=user@example.com
+SMTP_PASS=password
+SMTP_FROM=noreply@mathpy.bd
+```
 
-## Deploy on Vercel
+## Dev
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm run start    # serve production build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+app/
+  page.tsx                     # / → Command Center
+  layout.tsx                   # root layout, fonts, ThemeProvider
+  globals.css                  # all design tokens + component styles
+  api/
+    assignments/
+      submit/route.ts          # PDF upload handler
+      remind/route.ts          # overdue check + email stub
+  [route]/page.tsx             # one file per page
+
+components/
+  chrome.tsx                   # Sidebar + Topbar (shared shell)
+  icons.tsx                    # custom SVG icon set
+  brand.tsx                    # Wordmark + Spotmark
+  theme-provider.tsx           # dark/light context + localStorage
+  v3-command.tsx               # Command Center (main dashboard)
+  v1-executive.tsx             # Classic dashboard
+  lesson.tsx                   # Lesson player + assignment
+  courses.tsx                  # My Courses
+  live.tsx                     # Live Classes
+  exams-hub.tsx                # Exams hub
+  mcq-practice.tsx             # MCQ practice session
+  v2-performance.tsx           # Performance dashboard
+  materials.tsx                # Study Materials
+  mentor.tsx                   # Mentor chat
+  calendar.tsx                 # Calendar
+  settings.tsx                 # Settings
+
+lib/
+  data.ts                      # MOCK data + types
+  assignments.ts               # Assignment types + in-memory store
+```
