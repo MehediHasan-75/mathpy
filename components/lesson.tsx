@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icons } from './icons';
 import { Sidebar, Topbar } from './chrome';
+import type { Assignment } from '@/lib/assignments';
 
 const PLAYLIST = [
   { n: 1, title: 'Introduction to Organic Chemistry', dur: '32:10', done: true },
@@ -33,10 +34,63 @@ const NOTES = [
   { time: '18:45', text: 'KEY — cyanohydrins can be hydrolyzed to α-hydroxy acids. Frequently asked in admission exams.' },
 ];
 
+// Assignment for this lesson (in production: fetch from API by lessonId)
+const LESSON_ASSIGNMENT: Assignment = {
+  id: 'a-l1',
+  lessonId: 'l1',
+  courseId: 'c1',
+  title: 'Nucleophilic Addition — Mechanism Analysis',
+  description:
+    'Write a detailed mechanism for the reaction of benzaldehyde with HCN. Include all intermediates, electron flow arrows, and explain why aldehydes are more reactive than ketones. Submit as a neat hand-written or typed PDF (max 5 pages).',
+  dueDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+  maxPoints: 20,
+};
+
+function useDueCountdown(dueDate: string) {
+  const due = new Date(dueDate);
+  const now = new Date();
+  const diffMs = due.getTime() - now.getTime();
+  if (diffMs <= 0) return { label: 'Overdue', overdue: true };
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const mins  = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  if (hours >= 24) return { label: `${Math.floor(hours / 24)}d ${hours % 24}h left`, overdue: false };
+  return { label: `${hours}h ${mins}m left`, overdue: false };
+}
+
 export function LessonPage() {
   const router = useRouter();
   const [tab, setTab] = useState('notes');
   const [playing, setPlaying] = useState(false);
+
+  // Assignment state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [submitting, setSubmitting]     = useState(false);
+  const [submitted, setSubmitted]       = useState(false);
+  const [submitError, setSubmitError]   = useState<string | null>(null);
+  const [submittedName, setSubmittedName] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const due = useDueCountdown(LESSON_ASSIGNMENT.dueDate);
+
+  async function handleSubmit() {
+    if (!selectedFile) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const fd = new FormData();
+      fd.append('assignmentId', LESSON_ASSIGNMENT.id);
+      fd.append('file', selectedFile);
+      const res = await fetch('/api/assignments/submit', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Submission failed');
+      setSubmittedName(selectedFile.name);
+      setSubmitted(true);
+      setSelectedFile(null);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Submission failed');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="lesson-shell">
@@ -148,6 +202,7 @@ export function LessonPage() {
               {[
                 { id: 'notes', label: 'My notes', count: 3 },
                 { id: 'chapters', label: 'Chapters', count: CHAPTERS.length },
+                { id: 'assignment', label: 'Assignment', count: submitted ? null : 1 },
                 { id: 'materials', label: 'Materials', count: 4 },
                 { id: 'discussion', label: 'Discussion', count: 12 },
                 { id: 'transcript', label: 'Transcript', count: null },
@@ -196,6 +251,129 @@ export function LessonPage() {
                     <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)', textAlign: 'right' }}>{i < 2 ? '✓' : i === 2 ? 'now' : ''}</span>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {tab === 'assignment' && (
+              <div>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                        padding: '3px 8px', borderRadius: 4,
+                        background: due.overdue ? 'oklch(0.92 0.035 30)' : 'var(--blue-soft)',
+                        color: due.overdue ? 'oklch(0.38 0.10 30)' : 'var(--blue)',
+                      }}>
+                        {due.overdue ? 'Overdue' : due.label}
+                      </span>
+                      <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>
+                        Due {new Date(LESSON_ASSIGNMENT.dueDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <h2 className="display" style={{ fontSize: 20, fontWeight: 500, margin: 0, letterSpacing: '-0.02em' }}>
+                      {LESSON_ASSIGNMENT.title}
+                    </h2>
+                  </div>
+                  <div className="mono" style={{ fontSize: 12, color: 'var(--ink-3)', flexShrink: 0 }}>{LESSON_ASSIGNMENT.maxPoints} pts</div>
+                </div>
+
+                {/* Description */}
+                <div style={{ padding: 18, background: 'var(--bg-sunk)', borderRadius: 10, marginBottom: 24, fontSize: 13.5, lineHeight: 1.65, color: 'var(--ink-2)' }}>
+                  {LESSON_ASSIGNMENT.description}
+                </div>
+
+                {/* Submission area */}
+                {submitted ? (
+                  <div style={{ padding: 24, border: '1px solid var(--emerald)', borderRadius: 12, background: 'var(--emerald-soft)', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--emerald)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                      <Icons.Check size={18} style={{ color: 'var(--bg)', strokeWidth: 2.5 } as React.CSSProperties} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'oklch(0.30 0.08 165)', marginBottom: 2 }}>Submitted successfully</div>
+                      <div className="mono" style={{ fontSize: 12, color: 'oklch(0.45 0.06 165)' }}>{submittedName} · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{ fontSize: 12 }}
+                      onClick={() => { setSubmitted(false); setSubmittedName(''); }}
+                    >
+                      Resubmit
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ border: '2px dashed var(--rule)', borderRadius: 12, padding: 28, textAlign: 'center' }}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf"
+                      style={{ display: 'none' }}
+                      onChange={e => {
+                        const f = e.target.files?.[0] ?? null;
+                        setSelectedFile(f);
+                        setSubmitError(null);
+                      }}
+                    />
+
+                    {!selectedFile ? (
+                      <>
+                        <div style={{ width: 44, height: 44, borderRadius: 10, background: 'var(--bg-sunk)', display: 'grid', placeItems: 'center', margin: '0 auto 14px' }}>
+                          <Icons.Download size={20} style={{ color: 'var(--ink-3)', transform: 'rotate(180deg)' }} />
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>Upload your PDF</div>
+                        <div style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 18 }}>Max 20 MB · PDF only</div>
+                        <button className="btn btn-secondary btn-sm" onClick={() => fileInputRef.current?.click()}>
+                          Choose file
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', marginBottom: 18 }}>
+                          <div style={{ width: 36, height: 44, background: 'var(--bg-sunk)', borderRadius: 5, display: 'grid', placeItems: 'center' }}>
+                            <Icons.FileText size={16} style={{ color: 'var(--blue)' }} />
+                          </div>
+                          <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontSize: 13, fontWeight: 500 }}>{selectedFile.name}</div>
+                            <div className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                            style={{ color: 'var(--ink-4)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                        {submitError && (
+                          <div style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 14 }}>{submitError}</div>
+                        )}
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                          <button className="btn btn-primary btn-sm" onClick={handleSubmit} disabled={submitting}>
+                            {submitting ? 'Submitting…' : 'Submit assignment'}
+                          </button>
+                          <button className="btn btn-ghost btn-sm" onClick={() => fileInputRef.current?.click()}>
+                            Change file
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Rules */}
+                <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {[
+                    'PDF format only — hand-written scans accepted if legible',
+                    'Max file size 20 MB',
+                    'Late submissions accepted up to 24h after due date with −5 pts penalty',
+                    'Missing submissions trigger an automatic reminder email',
+                  ].map((r, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12.5, color: 'var(--ink-3)' }}>
+                      <span style={{ color: 'var(--ink-4)', flexShrink: 0 }}>—</span>
+                      {r}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
