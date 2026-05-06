@@ -36,7 +36,7 @@ The remind endpoint runs automatically every 6 hours via Vercel Cron (`vercel.js
 4. Cron hits `GET /api/assignments/remind` every 6h — finds students past due with no submission
 5. Sends reminder email per student
 
-**Email sending is a stub** — plug in your provider in `app/api/assignments/remind/route.ts`:
+**Email sending is a stub** — plug in your provider in `frontend/app/api/assignments/remind/route.ts`:
 
 ```ts
 // Resend
@@ -79,43 +79,53 @@ SMTP_FROM=noreply@mathpy.bd
 ## Dev
 
 ```bash
+cd frontend
 npm run dev      # http://localhost:3000
 npm run build    # production build
 npm run start    # serve production build
 ```
 
-## Project Structure
+## Monorepo Structure
 
 ```
-app/
-  page.tsx                     # / → Command Center
-  layout.tsx                   # root layout, fonts, ThemeProvider
-  globals.css                  # all design tokens + component styles
-  api/
-    assignments/
-      submit/route.ts          # PDF upload handler
-      remind/route.ts          # overdue check + email stub
-  [route]/page.tsx             # one file per page
-
-components/
-  chrome.tsx                   # Sidebar + Topbar (shared shell)
-  icons.tsx                    # custom SVG icon set
-  brand.tsx                    # Wordmark + Spotmark
-  theme-provider.tsx           # dark/light context + localStorage
-  v3-command.tsx               # Command Center (main dashboard)
-  v1-executive.tsx             # Classic dashboard
-  lesson.tsx                   # Lesson player + assignment
-  courses.tsx                  # My Courses
-  live.tsx                     # Live Classes
-  exams-hub.tsx                # Exams hub
-  mcq-practice.tsx             # MCQ practice session
-  v2-performance.tsx           # Performance dashboard
-  materials.tsx                # Study Materials
-  mentor.tsx                   # Mentor chat
-  calendar.tsx                 # Calendar
-  settings.tsx                 # Settings
-
-lib/
-  data.ts                      # MOCK data + types
-  assignments.ts               # Assignment types + in-memory store
+mathpy-next/
+├── frontend/                        # Next.js 16 app (all UI + API routes)
+│   ├── app/
+│   │   ├── page.tsx                 # / → Command Center
+│   │   ├── layout.tsx               # root layout, fonts, ThemeProvider
+│   │   ├── globals.css              # all design tokens + component styles
+│   │   ├── api/
+│   │   │   └── assignments/
+│   │   │       ├── submit/route.ts  # PDF upload handler
+│   │   │       └── remind/route.ts  # overdue check + email stub
+│   │   └── [route]/page.tsx         # one file per page
+│   ├── components/
+│   │   ├── chrome.tsx               # Sidebar + Topbar (shared shell)
+│   │   ├── icons.tsx                # custom SVG icon set
+│   │   ├── brand.tsx                # Wordmark + Spotmark
+│   │   ├── theme-provider.tsx       # dark/light context + localStorage
+│   │   ├── v3-command.tsx           # Command Center (main dashboard)
+│   │   ├── v1-executive.tsx         # Classic dashboard
+│   │   ├── lesson.tsx               # Lesson player + assignment
+│   │   ├── courses.tsx              # My Courses
+│   │   ├── live.tsx                 # Live Classes
+│   │   ├── exams-hub.tsx            # Exams hub
+│   │   ├── mcq-practice.tsx         # MCQ practice session
+│   │   ├── v2-performance.tsx       # Performance dashboard
+│   │   ├── materials.tsx            # Study Materials
+│   │   ├── mentor.tsx               # Mentor chat
+│   │   ├── calendar.tsx             # Calendar
+│   │   └── settings.tsx             # Settings
+│   └── lib/
+│       ├── data.ts                  # MOCK data + Course/Exam types
+│       └── assignments.ts           # Assignment types + in-memory store
+│
+├── backend/                         # placeholder — no standalone backend
+│                                    # API routes live in frontend/app/api/
+│
+└── shared/                          # shared TypeScript type definitions
+    ├── index.ts                     # re-exports all types
+    └── types/
+        ├── assignments.ts           # Assignment, Submission
+        └── data.ts                  # Course, Exam
 ```
