@@ -88,7 +88,7 @@ npm run start    # serve production build
 ## Monorepo Structure
 
 ```
-mathpy-next/
+mathpy/
 ├── frontend/                        # Next.js 16 app (all UI + API routes)
 │   ├── app/
 │   │   ├── page.tsx                 # / → Command Center
