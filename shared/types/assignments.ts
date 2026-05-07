@@ -1,19 +1,32 @@
-export type Assignment = {
-  id: string;
-  lessonId: string;
-  courseId: string;
-  title: string;
-  description: string;
-  dueDate: string; // ISO string
-  maxPoints: number;
-};
+export type SubmissionStatus = 'pending' | 'submitted' | 'graded';
 
-export type Submission = {
+export interface Assignment {
   id: string;
-  assignmentId: string;
-  studentId: string;
-  studentEmail: string;
-  fileName: string;
-  fileSize: number;
-  submittedAt: string; // ISO string
-};
+  lesson_id: string;
+  title: string;
+  due_date: string;
+  max_score: number;
+}
+
+export interface AssignmentCreate {
+  lesson_id: string;
+  title: string;
+  due_date: string;
+  max_score?: number;
+}
+
+export interface AssignmentUpdate {
+  title?: string;
+  due_date?: string;
+  max_score?: number;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  assignment_id: string;
+  user_id: string;
+  file_url: string;
+  submitted_at: string;
+  score: number | null;
+  status: SubmissionStatus;
+}

@@ -1,4 +1,4 @@
-export type Course = {
+export type CourseCard = {
   id: string;
   title: string;
   subtitle: string;
@@ -14,7 +14,7 @@ export type Course = {
   coverTone: string;
 };
 
-export type Exam = {
+export type ExamCard = {
   id: string;
   title: string;
   type: 'Model Test' | 'Daily Practice' | 'Chapter Test' | 'Mock';
