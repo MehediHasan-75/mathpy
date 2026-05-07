@@ -117,15 +117,59 @@ mathpy/
 │   │   ├── calendar.tsx             # Calendar
 │   │   └── settings.tsx             # Settings
 │   └── lib/
-│       ├── data.ts                  # MOCK data + Course/Exam types
-│       └── assignments.ts           # Assignment types + in-memory store
+│       ├── data.ts                  # MOCK data (CourseCard, ExamCard UI types)
+│       └── assignments.ts           # in-memory store (dev only)
 │
-├── backend/                         # placeholder — no standalone backend
-│                                    # API routes live in frontend/app/api/
+├── backend/                         # FastAPI — async SQLAlchemy 2.0
+│   └── app/
+│       ├── main.py                  # FastAPI app + lifespan
+│       ├── core/
+│       │   └── database.py          # async engine, AsyncSession, get_db
+│       ├── models/                  # SQLAlchemy ORM models
+│       │   ├── base.py              # DeclarativeBase + helpers
+│       │   ├── user.py              # User, ActiveToken
+│       │   ├── course.py            # Course, Chapter, Lesson, Enrollment, Progress, StudyMaterial
+│       │   ├── assignment.py        # Assignment, AssignmentSubmission
+│       │   └── exam.py              # Exam, Question, ExamSubmission
+│       └── schemas/                 # Pydantic v2 Base/Create/Update/Response
+│           ├── user.py
+│           ├── course.py
+│           ├── assignment.py
+│           └── exam.py
 │
-└── shared/                          # shared TypeScript type definitions
-    ├── index.ts                     # re-exports all types
-    └── types/
-        ├── assignments.ts           # Assignment, Submission
-        └── data.ts                  # Course, Exam
+├── shared/                          # shared TypeScript type definitions
+│   ├── index.ts                     # re-exports all types
+│   └── types/
+│       ├── data.ts                  # UI-only CourseCard, ExamCard
+│       ├── assignments.ts           # Assignment, AssignmentSubmission (DB-matched)
+│       ├── users.ts                 # User, ActiveToken
+│       ├── courses.ts               # Course, Chapter, Lesson, Enrollment, Progress, StudyMaterial
+│       └── exams.ts                 # Exam, Question, ExamSubmission, McqOption
+│
+└── docs/
+    └── schema-design.md             # full DB schema reference for developers
 ```
+
+## Backend
+
+FastAPI skeleton with full async PostgreSQL schema (SQLAlchemy 2.0 + asyncpg). No API routes wired yet — models and schemas are ready for endpoint development.
+
+```bash
+cd backend
+source .venv/bin/activate
+uvicorn app.main:app --reload   # http://localhost:8000
+```
+
+**Requires:** PostgreSQL + `DATABASE_URL` env var (see Environment Variables).
+
+### Alembic migrations (first time)
+
+```bash
+cd backend
+alembic init alembic
+# edit alembic/env.py — import Base from app.models, use async engine
+alembic revision --autogenerate -m "initial_schema"
+alembic upgrade head
+```
+
+See `docs/schema-design.md` for full schema, enums, and JSONB structures.
