@@ -1,5 +1,8 @@
 from contextlib import asynccontextmanager
 
+from app.core.logger import log_requests, setup_logger
+
+setup_logger()
 from fastapi import FastAPI  # pyright: ignore[reportMissingImports]
 from fastapi.middleware.cors import CORSMiddleware  # pyright: ignore[reportMissingImports]
 
@@ -29,6 +32,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.middleware("http")(log_requests)
 
 app.include_router(api_router, prefix="/api")
 
