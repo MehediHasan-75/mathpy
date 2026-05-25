@@ -1,3 +1,76 @@
+# PostgreSQL Database Setup (Local Development)
+
+## 1. Install PostgreSQL (macOS via Homebrew)
+
+```bash
+brew install postgresql
+```
+
+Start PostgreSQL service:
+
+```bash
+brew services start postgresql
+```
+
+Verify installation:
+
+```bash
+psql --version
+```
+
+---
+
+## 2. Create Database User and Database
+
+Open PostgreSQL shell:
+
+```bash
+psql postgres
+```
+
+Run the following SQL commands:
+
+```sql
+-- Create database user
+CREATE USER admin WITH PASSWORD 'admin123';
+
+-- Create database
+CREATE DATABASE mathpy_database OWNER admin;
+```
+
+Verify databases:
+
+```sql
+\l
+```
+
+Exit:
+
+```sql
+\q
+```
+
+---
+
+## 3. Database Connection URL (Environment Variable)
+
+Create a `.env` file in the backend root directory:
+
+```env
+DATABASE_URL=postgresql+psycopg://admin:admin123@localhost:5432/mathpy_database
+```
+
+---
+
+## 4. Install Python Dependencies
+
+```bash
+pip install sqlalchemy psycopg python-dotenv
+```
+
+---
+
+
 # FastAPI Lifespan + Database Initialization
 
 In `main.py` (run using `uvicorn`), we manage database setup and health checks using FastAPI’s `lifespan` and a `/health` endpoint.
@@ -135,7 +208,7 @@ Your FastAPI Route
        |
        |  "I need to save a user"
        v
-SQLAlchemy ORM  (Python objects ↔ SQL rows)
+SQLAlchemy ORM Engine (Python objects ↔ SQL rows)
        |
        |  "INSERT INTO users ..."
        v
@@ -150,16 +223,16 @@ You never write raw SQL directly. Instead, you work with Python objects (`User`,
 
 These three concepts are the foundation of the entire database system.
 
-| Concept         | Analogy                    | What it does                                             |
-| --------------- | -------------------------- | -------------------------------------------------------- |
-| Engine          | The database’s phone line  | Long-lived object that manages connections               |
-| Connection Pool | A set of ready phone lines | Reuses existing connections instead of creating new ones |
-| Session         | A single phone call        | Short-lived interaction with the database                |
+| Concept         | What it does                                             |
+| --------------- | -------------------------------------------------------- |
+| Engine          | Long-lived object that manages connections               |
+| Connection Pool | Reuses existing connections instead of creating new ones |
+| Session         | Short-lived interaction with the database                |
 
 ---
 
 ## Engine + Session Setup
-The database layer is designed so that every request gets a safe, temporary session backed by a pooled, long-lived engine — with SQLAlchemy translating Python objects into SQL while FastAPI manages the lifecycle automatically.
+The database layer in core/database.py is designed so that every request gets a safe, temporary session backed by a pooled, long-lived engine — with SQLAlchemy translating Python objects into SQL while FastAPI manages the lifecycle automatically.
 
 ```python
 # Engine — created once when the app starts
