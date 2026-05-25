@@ -18,7 +18,6 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
 
-    # Database
-    DATABASE_URL: str = "postgresql://rag_user:rag_password@localhost:5432/rag_db"
+    DATABASE_URL: str
     DB_POOL_SIZE: int = 20
     DB_MAX_OVERFLOW: int = 40

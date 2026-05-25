@@ -13,13 +13,8 @@ from app.models import Base
 
 
 def create_db_engine():
-    url = settings.DATABASE_URL
-    # postgresql:// in .env → psycopg driver (pip install psycopg[binary])
-    if url.startswith("postgresql://"):
-        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
-
     engine = create_engine(
-        url,
+        settings.DATABASE_URL,
         pool_size=settings.DB_POOL_SIZE,
         max_overflow=settings.DB_MAX_OVERFLOW,
         pool_pre_ping=True,
