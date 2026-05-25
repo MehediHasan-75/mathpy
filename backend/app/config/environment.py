@@ -1,9 +1,13 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent.parent
+
+
 class Settings(BaseSettings):
-    #overwrite model_config of BaseSettings
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_BACKEND_ROOT / ".env",
         case_sensitive=True,
         extra="ignore",
     )

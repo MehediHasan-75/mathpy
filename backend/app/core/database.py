@@ -2,61 +2,59 @@
 
 from __future__ import annotations
 
-from backend.app.models import Base
-from loguru import logger 
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from collections.abc import Generator
+
+from loguru import logger
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import Session, sessionmaker
+
+from app.config import settings
+from app.models import Base
 
 
-DEFAULT_DATABASE_URL: str = "sqlite:///./app.db"
+def create_db_engine():
+    url = settings.DATABASE_URL
+    # postgresql:// in .env → psycopg driver (pip install psycopg[binary])
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
 
-def get_batabase_url() -> str:
-    """Get database URL from settings or use default SQLite."""
-    try:
-        from app.config import settings
-        db_url = settings.DATABASE_URL
-        return db_url
-
-    except Exception:
-        return DEFAULT_DATABASE_URL
-
-def create_db_engine(database_url: str | None = None):
-    """Create SQLAlchemy engine with appropriate configuration."""
-    url = database_url or get_batabase_url()
-
-    try:
-        from app.config import settings
-        pool_size = settings.DB_POOL_SIZE
-        max_overflow = settings.DB_MAX_OVERFLOW
-    except Exception:
-        pool_size = 5
-        max_overflow = 10
-    
     engine = create_engine(
         url,
-        pool_size=pool_size,
-        max_overflow=max_overflow,
+        pool_size=settings.DB_POOL_SIZE,
+        max_overflow=settings.DB_MAX_OVERFLOW,
         pool_pre_ping=True,
-        echo=False,
+        echo=settings.DEBUG,
     )
-
-    logger.info(f"PostgreSQL engine created with pool_size={pool_size}")
+    logger.info(f"PostgreSQL engine created with pool_size={settings.DB_POOL_SIZE}")
     return engine
 
 
 engine = create_db_engine()
-SessionLocal = sessionmaker(autocommit=False, autoFlush=False, bind=engine)
-    
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def check_db_connection() -> bool:
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+    return True
+
+
 def init_db() -> None:
     """Create all database tables."""
-    from app.models import Assignment, Course, Exam, User
+    import app.models # This reads the __init__.py and loads everything!
     Base.metadata.create_all(bind=engine)
-    logger.info("Database tables creagted")
+    logger.info("Database tables created")
+
 
 def drop_db() -> None:
     """Drop all database tables. WARNING: destructive."""
     Base.metadata.drop_all(bind=engine)
     logger.warning("Database tables dropped")
-
-
